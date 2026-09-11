@@ -54,4 +54,81 @@ for (const name of ['slots', 'settingsScope']) {
   }
 }
 
-console.log('dsh-node-accent: client loader registration ok')
+// 真的跑一遍 apply: 卡片能出现在设置页, 靠的是"注册到 settings.plugin.item 的
+// key"与"Host 注册的 settings namespace"相等, 这里两边都断言.
+const bindings = []
+const registrations = []
+const injections = []
+const effects = []
+const ctx = {
+  logger: { info() {}, warn() {}, debug() {} },
+  settingsScope: {
+    bind(spec) {
+      bindings.push(spec)
+      return {
+        getSnapshot: () => ({ value: undefined }),
+        subscribe: () => () => {},
+        set: async () => {},
+      }
+    },
+  },
+  slots: {
+    inject(name, factory) {
+      injections.push(name)
+      factory()
+    },
+    register(options, component) {
+      registrations.push({ options, component })
+      return options
+    },
+  },
+  effect(callback) {
+    effects.push(callback)
+  },
+}
+
+exports.apply(ctx)
+for (const effect of effects) effect()
+
+if (!injections.includes('settings.plugin.item')) {
+  throw new Error(`apply did not inject the plugin card slot: ${JSON.stringify(injections)}`)
+}
+const card = registrations.find(entry => entry.options.name === 'settings.plugin.item')
+if (card === undefined) {
+  throw new Error('apply did not register a settings.plugin.item card')
+}
+
+// 卡片能否出现在设置页, 取决于它的 key 与 Host 半区注册的 settings namespace
+// 相等 (官方 tab 只派发两者的交集). 两边都取真实构建产物, 做交叉断言.
+const host = await import(join(root, 'lib/index.js'))
+let hostNamespace
+host.apply({
+  logger: { info() {}, debug() {} },
+  inject(services, callback) {
+    if (!services.includes('settings')) throw new Error(`host wants unknown services: ${services}`)
+    callback({
+      logger: { info() {}, debug() {} },
+      settings: {
+        installSection(owner, ns) {
+          hostNamespace = ns
+        },
+      },
+    })
+  },
+})
+
+if (hostNamespace === undefined) {
+  throw new Error('host half did not install a settings section')
+}
+if (card.options.key !== hostNamespace) {
+  throw new Error(`card key ${card.options.key} !== host namespace ${hostNamespace}`)
+}
+const bound = bindings.find(spec => spec.namespace === hostNamespace)
+if (bound === undefined) {
+  throw new Error(`apply did not bind the ${hostNamespace} settings scope`)
+}
+if (typeof bound.decode !== 'function') {
+  throw new Error('bound scope has no decoder')
+}
+
+console.log(`dsh-node-accent: client loader registration ok (card key "${card.options.key}")`)

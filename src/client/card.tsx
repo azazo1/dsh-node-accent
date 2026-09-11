@@ -342,7 +342,7 @@ export function NodeAccentCard({ scope }: NodeAccentCardProps) {
 
           <div className="dna-footer">
             <span className="dna-status">
-              改动即时生效. 与 dsh-node-appearance 不能同时启用.
+              改动即时生效. 与 dsh-node-appearance 类插件不能同时启用.
             </span>
             <button
               type="button"
