@@ -1,0 +1,11 @@
+# dsh-node-accent bundle patch
+#
+# Inserts the plugin row into the web profile roster. The row runs the host
+# half (exports ".") in the host process and the browser half (exports
+# "./client") in the web GUI.
+#
+# The row carries no config: the palette lives in the `node-accent` settings
+# namespace and is edited from Settings > Plugins.
+- insert:
+    - id: dsh-node-accent
+      name: 'dsh-node-accent'
