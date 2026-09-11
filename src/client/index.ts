@@ -7,7 +7,7 @@
  */
 import { createElement } from 'react'
 import {
-  SETTINGS_NAMESPACE, STYLE_ID, decodeNodeAccentSettings,
+  CARD_PRIORITY, SETTINGS_NAMESPACE, STYLE_ID, decodeNodeAccentSettings,
   type NodeAccentSettings,
 } from '../shared.ts'
 import { CARD_CSS, CARD_STYLE_ID } from './card-css.ts'
@@ -56,7 +56,7 @@ export function apply(ctx: ClientContext): void {
   }, 'dsh-node-accent: repaint on settings change')
 
   ctx.slots.inject('settings.plugin.item', () => ctx.slots.register(
-    { name: 'settings.plugin.item', key: SETTINGS_NAMESPACE },
+    { name: 'settings.plugin.item', key: SETTINGS_NAMESPACE, priority: CARD_PRIORITY },
     () => createElement(NodeAccentCard, { scope }),
   ))
 }

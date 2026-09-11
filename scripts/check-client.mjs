@@ -97,6 +97,11 @@ const card = registrations.find(entry => entry.options.name === 'settings.plugin
 if (card === undefined) {
   throw new Error('apply did not register a settings.plugin.item card')
 }
+// 官方那几张卡都是默认 priority 0, keyed slot 只按 priority 升序排. 没有显式
+// 优先级就会退回"谁先注册谁在前", 卡片可能顶到配置页最上面.
+if (!(card.options.priority > 0)) {
+  throw new Error(`card priority ${card.options.priority} does not push it below the official cards`)
+}
 
 // 卡片能否出现在设置页, 取决于它的 key 与 Host 半区注册的 settings namespace
 // 相等 (官方 tab 只派发两者的交集). 两边都取真实构建产物, 做交叉断言.

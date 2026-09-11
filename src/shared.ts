@@ -23,6 +23,16 @@ export const STYLE_ID = 'dsh-node-accent/rules'
 /** 承载当前行配色的 CSS 变量, 由行根节点声明, 图标和标题消费. */
 export const ACCENT_VAR = '--naccent'
 
+/**
+ * 配置卡在 `settings.plugin.item` 里的排序权重.
+ *
+ * keyed slot 的账本只按 `priority` 升序排, 同优先级才看注册先后; 官方那几张卡
+ * (bash / agent loop / subagent model / web search) 都用默认的 0, 而注册先后
+ * 取决于插件 apply 顺序, 不稳定. 给一个明显大于 0 的值, 本卡就稳定排在官方
+ * 卡片之后, 不会顶到配置页最上面.
+ */
+export const CARD_PRIORITY = 100
+
 /** 按事件类别着色的可选类别. */
 export const CATEGORIES = [
   'search',
