@@ -7,7 +7,7 @@
  */
 import { createElement } from 'react'
 import {
-  CARD_PRIORITY, SETTINGS_NAMESPACE, STYLE_ID, decodeNodeAccentSettings,
+  CARD_PRIORITY, PLUGIN_NAME, STYLE_ID,
   type NodeAccentSettings,
 } from '../shared.ts'
 import { CARD_CSS, CARD_STYLE_ID } from './card-css.ts'
@@ -17,7 +17,7 @@ import { buildCss } from './palette.ts'
 import type { SettingsScope } from './scope.ts'
 import { ensureStyleTag, upsertStyleTag } from './style.ts'
 
-export const inject = ['slots', 'settingsScope']
+export const inject = ['slots', 'configForms']
 
 /**
  * 用当前快照重写配色样式表.
@@ -43,10 +43,7 @@ export function apply(ctx: ClientContext): void {
   ctx.logger.info('dsh-node-accent: client applying')
   ensureStyleTag(CARD_STYLE_ID, CARD_CSS)
 
-  const scope = ctx.settingsScope.bind({
-    namespace: SETTINGS_NAMESPACE,
-    decode: decodeNodeAccentSettings,
-  })
+  const scope = ctx.configForms.get<NodeAccentSettings>(PLUGIN_NAME)
 
   ctx.effect(() => {
     repaint(ctx, scope)
@@ -56,7 +53,7 @@ export function apply(ctx: ClientContext): void {
   }, 'dsh-node-accent: repaint on settings change')
 
   ctx.slots.inject('settings.plugin.item', () => ctx.slots.register(
-    { name: 'settings.plugin.item', key: SETTINGS_NAMESPACE, priority: CARD_PRIORITY },
+    { name: 'settings.plugin.item', key: PLUGIN_NAME, priority: CARD_PRIORITY },
     () => createElement(NodeAccentCard, { scope }),
   ))
 }

@@ -1,4 +1,4 @@
-import type { SettingsScopeService } from './scope.ts'
+import type { SettingsScope } from './scope.ts'
 
 /** Client 插件实际用到的 Cordis 面. */
 export interface ClientContext {
@@ -7,7 +7,7 @@ export interface ClientContext {
     warn: (...args: unknown[]) => void
     debug: (...args: unknown[]) => void
   }
-  settingsScope: SettingsScopeService
+  configForms: { get<T>(namespace: string): SettingsScope<T> }
   slots: {
     inject: (name: string, factory: () => unknown) => void
     register: (options: Record<string, unknown>, component: unknown) => unknown

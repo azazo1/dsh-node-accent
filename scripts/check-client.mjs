@@ -48,7 +48,7 @@ const exports = handoff.factory((spec) => {
 if (typeof exports.apply !== 'function') {
   throw new Error('factory did not export apply')
 }
-for (const name of ['slots', 'settingsScope']) {
+for (const name of ['slots', 'configForms']) {
   if (!Array.isArray(exports.inject) || !exports.inject.includes(name)) {
     throw new Error(`unexpected inject: ${JSON.stringify(exports.inject)}`)
   }
@@ -62,13 +62,13 @@ const injections = []
 const effects = []
 const ctx = {
   logger: { info() {}, warn() {}, debug() {} },
-  settingsScope: {
-    bind(spec) {
-      bindings.push(spec)
+  configForms: {
+    get(namespace) {
+      bindings.push({ namespace })
       return {
         getSnapshot: () => ({ value: undefined }),
         subscribe: () => () => {},
-        set: async () => {},
+        set: async () => true,
       }
     },
   },
@@ -106,34 +106,15 @@ if (!(card.options.priority > 0)) {
 // 卡片能否出现在设置页, 取决于它的 key 与 Host 半区注册的 settings namespace
 // 相等 (官方 tab 只派发两者的交集). 两边都取真实构建产物, 做交叉断言.
 const host = await import(join(root, 'lib/index.js'))
-let hostNamespace
-host.apply({
-  logger: { info() {}, debug() {} },
-  inject(services, callback) {
-    if (!services.includes('settings')) throw new Error(`host wants unknown services: ${services}`)
-    callback({
-      logger: { info() {}, debug() {} },
-      settings: {
-        installSection(owner, ns) {
-          hostNamespace = ns
-        },
-      },
-    })
-  },
-})
-
-if (hostNamespace === undefined) {
-  throw new Error('host half did not install a settings section')
+if (typeof host.Config !== 'function' && typeof host.Config !== 'object') {
+  throw new Error('host half did not export its Config schema')
 }
-if (card.options.key !== hostNamespace) {
-  throw new Error(`card key ${card.options.key} !== host namespace ${hostNamespace}`)
+if (card.options.key !== pluginId) {
+  throw new Error(`card key ${card.options.key} !== host namespace ${pluginId}`)
 }
-const bound = bindings.find(spec => spec.namespace === hostNamespace)
+const bound = bindings.find(spec => spec.namespace === pluginId)
 if (bound === undefined) {
-  throw new Error(`apply did not bind the ${hostNamespace} settings scope`)
-}
-if (typeof bound.decode !== 'function') {
-  throw new Error('bound scope has no decoder')
+  throw new Error(`apply did not bind the ${pluginId} settings scope`)
 }
 
 console.log(`dsh-node-accent: client loader registration ok (card key "${card.options.key}")`)

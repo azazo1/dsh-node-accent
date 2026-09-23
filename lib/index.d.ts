@@ -1,5 +1,5 @@
 import z from "@deepseek-ai/schemastery";
-import { Context } from "@deepseek-ai/cordis";
+import { Context, Volatile } from "@deepseek-ai/cordis";
 //#region src/shared.d.ts
 /** 按事件类别着色的可选类别. */
 declare const CATEGORIES: readonly ["search", "agent", "execute", "file", "task", "command", "thinking", "context", "other"];
@@ -21,15 +21,26 @@ interface NodeAccentSettings {
 //#endregion
 //#region src/index.d.ts
 declare const name = "dsh-node-accent";
-type Config = NodeAccentSettings;
+interface Config {
+  paintIcon: Volatile<boolean>;
+  paintTitle: Volatile<boolean>;
+  colors: Volatile<NodeAccentSettings['colors']>;
+  toolColors: Volatile<Record<string, string>>;
+}
+interface ConfigInput {
+  paintIcon?: boolean;
+  paintTitle?: boolean;
+  colors?: NodeAccentSettings['colors'];
+  toolColors?: Record<string, string>;
+}
 /** Loader / settings 共用的着色 schema. */
-declare const Config: z<NodeAccentSettings>;
+declare const Config: z<ConfigInput, Config>;
 /**
  * 在 settings 服务可用时挂上命名空间, 并把 cordis.yml 行配置作为 composition 底.
  * @param ctx - Host 插件上下文.
  * @param config - Loader 校验后的行配置, 缺省时使用 schema 默认值.
  */
-declare function apply(ctx: Context, config?: NodeAccentSettings): void;
+declare function apply(ctx: Context, config: Config): void;
 //#endregion
 export { Config, apply, name };
 //# sourceMappingURL=index.d.ts.map
