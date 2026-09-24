@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
-  CATEGORIES, DEFAULT_COLORS, DEFAULT_SETTINGS, decodeNodeAccentSettings, isCssColor,
+  CATEGORIES, DEFAULT_COLORS, DEFAULT_SETTINGS, isCssColor,
   resolveColors,
 } from '../src/shared.ts'
 
@@ -33,30 +33,5 @@ describe('resolveColors', () => {
   it('never invents a category the plugin does not paint', () => {
     const colors = resolveColors({ colors: { steering: '#14b8a6' } } as never)
     assert.deepEqual(Object.keys(colors).sort(), [...CATEGORIES].sort())
-  })
-})
-
-describe('decodeNodeAccentSettings', () => {
-  it('returns undefined for a non-object section', () => {
-    assert.equal(decodeNodeAccentSettings(null), undefined)
-    assert.equal(decodeNodeAccentSettings('x'), undefined)
-  })
-
-  it('fills every field for an empty section', () => {
-    assert.deepEqual(decodeNodeAccentSettings({}), DEFAULT_SETTINGS)
-  })
-
-  it('reads the switches and drops unusable tool overrides', () => {
-    const decoded = decodeNodeAccentSettings({
-      paintIcon: false,
-      paintTitle: true,
-      colors: { execute: '#123456' },
-      toolColors: { bash: '#ff0000', broken: 'red' },
-    })
-    assert.equal(decoded?.paintIcon, false)
-    assert.equal(decoded?.paintTitle, true)
-    assert.equal(decoded?.colors.execute, '#123456')
-    assert.equal(decoded?.colors.file, DEFAULT_COLORS.file)
-    assert.deepEqual(decoded?.toolColors, { bash: '#ff0000' })
   })
 })

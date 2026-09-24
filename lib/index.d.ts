@@ -36,7 +36,7 @@ interface ConfigInput {
 /** Loader / settings 共用的着色 schema. */
 declare const Config: z<ConfigInput, Config>;
 /**
- * 在 settings 服务可用时挂上命名空间, 并把 cordis.yml 行配置作为 composition 底.
+ * 报告一次装配结果; 着色规则由浏览器半区按同一份 volatile Config 生成.
  * @param ctx - Host 插件上下文.
  * @param config - Loader 校验后的行配置, 缺省时使用 schema 默认值.
  */

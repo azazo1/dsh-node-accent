@@ -1,204 +1,107 @@
 /**
- * 设置卡的静态样式.
+ * 节点着色配置卡片的样式.
  *
- * 卡片外观沿用官方 Plugins 面板的卡片语言 (卡片壳, 名称压描述, chevron
- * disclosure), 只使用 DSH 主题 token. 这里手写而不是复用官方卡片组件: 特性
- * 插件跨包做值导入会触发 Client bundle 纯度门禁.
+ * 尺寸与间距对齐官方 fields.module.css, 颜色只用 --dsw-alias-* 语义 token.
  */
 
-/** 设置卡样式的标签 id. */
+/** 样式标签的 data-plugin-css 标记. */
 export const CARD_STYLE_ID = 'dsh-node-accent/card'
 
-/** 设置卡样式表. */
+/** 卡片样式表. */
 export const CARD_CSS = `
-.dna-card {
-  border: 1px solid var(--dsw-alias-border-l2);
-  background: var(--dsw-alias-bg-layer-3);
-  border-radius: 12px;
-  list-style: none;
-  transition: border-color .16s, background .16s;
-}
-
-.dna-card:hover {
-  border-color: var(--dsw-alias-label-dimmed);
-}
-
-.dna-open {
-  background: var(--dsw-alias-bg-layer-2);
-  border-color: var(--dsw-alias-label-dimmed);
-}
-
-.dna-header {
-  appearance: none;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 14px 16px;
-  border: 0;
-  border-radius: 12px;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.dna-header:focus-visible {
-  outline: 2px solid var(--dsw-alias-brand-primary);
-  outline-offset: -2px;
-}
-
-.dna-headText {
+.dna-field {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  gap: 4px;
-  min-width: 0;
+  gap: 6px;
+  padding: 12px 0;
 }
-
-.dna-name {
-  color: var(--dsw-alias-label-primary);
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.4;
+.dna-field + .dna-field {
+  border-top: 0.5px solid var(--dsw-alias-border-l2);
 }
-
-.dna-desc {
-  color: var(--dsw-alias-label-tertiary);
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.dna-chevron {
-  flex: none;
-  color: var(--dsw-alias-label-tertiary);
-  transition: transform .16s;
-}
-
-.dna-chevronOpen {
-  transform: rotate(180deg);
-}
-
-.dna-body {
-  margin: 0 16px;
-  padding-bottom: 8px;
-  border-top: 1px solid var(--dsw-alias-border-l2);
-}
-
-.dna-row {
-  position: relative;
+.dna-head {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 10px;
-  padding: 10px 0 4px;
-  border-top: 1px solid var(--dsw-alias-border-l2);
+  gap: 8px;
 }
-
-.dna-rowFirst,
-.dna-row:first-child {
-  margin-top: 4px;
-  border-top: none;
-}
-
-.dna-rowLabel {
-  display: flex;
-  flex-direction: column;
+.dna-label {
   flex: 1;
-  gap: 2px;
   min-width: 0;
   color: var(--dsw-alias-label-primary);
   font-size: 13px;
   font-weight: 500;
   line-height: 1.5;
 }
-
-.dna-rowHint {
-  color: var(--dsw-alias-label-tertiary);
+.dna-toolName {
+  font-family: var(--dsw-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
   font-size: 12px;
-  font-weight: 400;
-  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
-
-.dna-colorInput {
-  flex: none;
-  width: 34px;
-  height: 28px;
-  padding: 2px;
-  border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 8px;
-  background: var(--dsw-alias-bg-layer-3);
-  cursor: pointer;
+.dna-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
-
-.dna-colorText {
-  flex: none;
-  width: 112px;
-  height: 28px;
-  padding: 0 8px;
-  border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 8px;
-  background: var(--dsw-alias-bg-layer-3);
+.dna-reset {
+  padding: 0;
+  border: none;
+  background: none;
   color: var(--dsw-alias-label-secondary);
   font: inherit;
   font-size: 12px;
   line-height: 1.5;
-  font-variant-numeric: tabular-nums;
+  cursor: pointer;
 }
-
-.dna-colorText:focus-visible {
-  border-color: var(--dsw-alias-brand-primary);
-  outline: none;
-}
-
-.dna-sectionTitle {
-  margin: 14px 0 0;
-  color: var(--dsw-alias-label-primary);
-  font-size: 13px;
-  font-weight: 600;
+.dna-reset:hover:not(:disabled) { color: var(--dsw-alias-label-primary); }
+.dna-reset:disabled { cursor: default; }
+.dna-hint {
+  margin: 0;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 12px;
   line-height: 1.5;
 }
-
+.dna-sectionTitle {
+  margin: 16px 0 0;
+  color: var(--dsw-alias-label-primary);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+}
 .dna-sectionHint {
   margin: 4px 0 0;
   color: var(--dsw-alias-label-tertiary);
   font-size: 12px;
   line-height: 1.5;
 }
-
-.dna-toolName {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  color: var(--dsw-alias-label-primary);
-  font-family: var(--ds-font-family-code);
-  font-size: 13px;
-  line-height: 1.5;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.dna-toggles {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
 }
-
-.dna-empty {
-  margin: 8px 0 0;
-  color: var(--dsw-alias-label-tertiary);
+.dna-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--dsw-alias-label-secondary);
   font-size: 12px;
   line-height: 1.5;
 }
-
-.dna-addRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 10px 0 12px;
+.dna-colorInput {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0.5px solid var(--dsw-alias-border-l4);
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-layer-3);
+  cursor: pointer;
 }
-
+.dna-colorInput:disabled { cursor: default; }
+.dna-colorText,
 .dna-toolInput {
-  flex: 1;
-  min-width: 0;
   height: 34px;
   padding: 0 12px;
-  border: 1px solid var(--dsw-alias-border-l2);
+  border: 0.5px solid var(--dsw-alias-border-l4);
   border-radius: 8px;
   background: var(--dsw-alias-bg-layer-3);
   color: var(--dsw-alias-label-primary);
@@ -206,147 +109,63 @@ export const CARD_CSS = `
   font-size: 13px;
   line-height: 1.5;
 }
-
+.dna-colorText { width: 140px; flex: none; }
+.dna-toolInput { flex: 1; min-width: 0; }
+.dna-colorText:focus-visible,
 .dna-toolInput:focus-visible {
-  border-color: var(--dsw-alias-brand-primary);
   outline: none;
+  border-color: var(--dsw-alias-brand-primary);
 }
-
-.dna-toolInput::placeholder {
+.dna-colorText:disabled,
+.dna-toolInput:disabled {
   color: var(--dsw-alias-label-tertiary);
+  cursor: default;
 }
-
 .dna-button {
-  appearance: none;
   flex: none;
-  padding: 5px 14px;
-  border: 1px solid var(--dsw-alias-border-l2);
+  height: 34px;
+  padding: 0 12px;
+  border: 0.5px solid var(--dsw-alias-border-l4);
   border-radius: 8px;
-  background: transparent;
+  background: var(--dsw-alias-bg-layer-3);
   color: var(--dsw-alias-label-secondary);
   font: inherit;
   font-size: 13px;
   line-height: 1.5;
   cursor: pointer;
 }
-
 .dna-button:hover:not(:disabled) {
   color: var(--dsw-alias-label-primary);
-  border-color: var(--dsw-alias-label-dimmed);
+  border-color: var(--dsw-alias-border-l2);
 }
-
-.dna-button:focus-visible {
-  outline: 2px solid var(--dsw-alias-brand-primary);
-  outline-offset: 1px;
-}
-
-.dna-button:disabled {
-  opacity: .4;
-  cursor: default;
-}
-
-.dna-primary {
-  border-color: transparent;
-  background: var(--dsw-alias-label-primary);
-  color: var(--dsw-alias-bg-layer-3);
-}
-
-.dna-primary:hover:not(:disabled) {
-  border-color: transparent;
-  color: var(--dsw-alias-bg-layer-3);
-}
-
-.dna-danger {
-  border-color: var(--dsw-alias-state-error-primary);
-  color: var(--dsw-alias-state-error-primary);
-}
-
-.dna-toggles {
-  display: flex;
-  flex: none;
-  align-items: center;
-  gap: 12px;
-}
-
-.dna-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--dsw-alias-label-secondary);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.dna-switch {
-  flex: none;
-  width: 40px;
-  height: 22px;
-  padding: 0;
-  border: none;
-  border-radius: 11px;
-  background: var(--dsw-alias-border-l4, rgba(0, 0, 0, .16));
-  cursor: pointer;
-  transition: background .15s;
-}
-
-.dna-switchOn {
-  background: var(--dsw-alias-state-business-primary, #4fc3f7);
-}
-
-.dna-switch:disabled {
-  opacity: .45;
-  cursor: default;
-}
-
-.dna-switch:focus-visible {
-  outline: 2px solid var(--dsw-alias-brand-primary);
-  outline-offset: 2px;
-}
-
-.dna-knob {
-  display: block;
-  width: 16px;
-  height: 16px;
-  margin-left: 2px;
-  border-radius: 8px;
-  background: #fff;
-  pointer-events: none;
-  transition: margin-left .15s;
-}
-
-.dna-switchOn .dna-knob {
-  margin-left: 22px;
-}
-
-.dna-footer {
+.dna-button:disabled { cursor: default; }
+.dna-primary { color: var(--dsw-alias-label-primary); }
+.dna-danger { color: var(--dsw-alias-state-error-primary); }
+.dna-addRow {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 12px;
-  padding: 16px 0 4px;
-  border-top: 1px solid var(--dsw-alias-border-l2);
+  padding: 12px 0;
 }
-
+.dna-empty {
+  margin: 0;
+  padding: 12px 0;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.dna-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0 0;
+  border-top: 0.5px solid var(--dsw-alias-border-l2);
+}
 .dna-status {
-  margin-right: auto;
+  flex: 1;
+  min-width: 0;
   color: var(--dsw-alias-label-tertiary);
   font-size: 12px;
   line-height: 1.5;
 }
-
-@media (max-width: 640px) {
-  .dna-row {
-    flex-wrap: wrap;
-  }
-
-  .dna-toggles {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .dna-colorText {
-    flex: 1;
-    width: auto;
-  }
-}
-`.trim()
+`

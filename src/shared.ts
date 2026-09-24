@@ -11,9 +11,6 @@ export const PLUGIN_ID = 'dsh-node-accent'
 /** Host Cordis 插件名. */
 export const PLUGIN_NAME = PLUGIN_ID
 
-/** 持久化 settings 命名空间, 同时是设置卡的 key. */
-export const SETTINGS_NAMESPACE = 'node-accent'
-
 /** 配色规则样式标签的标记属性. */
 export const STYLE_ATTR = 'data-plugin-css'
 
@@ -22,16 +19,6 @@ export const STYLE_ID = 'dsh-node-accent/rules'
 
 /** 承载当前行配色的 CSS 变量, 由行根节点声明, 图标和标题消费. */
 export const ACCENT_VAR = '--naccent'
-
-/**
- * 配置卡在 `settings.plugin.item` 里的排序权重.
- *
- * keyed slot 的账本只按 `priority` 升序排, 同优先级才看注册先后; 官方那几张卡
- * (bash / agent loop / subagent model / web search) 都用默认的 0, 而注册先后
- * 取决于插件 apply 顺序, 不稳定. 给一个明显大于 0 的值, 本卡就稳定排在官方
- * 卡片之后, 不会顶到配置页最上面.
- */
-export const CARD_PRIORITY = 100
 
 /** 按事件类别着色的可选类别. */
 export const CATEGORIES = [
@@ -126,30 +113,4 @@ export function resolveColors(settings: Partial<NodeAccentSettings> | undefined)
     if (typeof value === 'string' && isCssColor(value)) colors[category] = value
   }
   return colors
-}
-
-/**
- * 把 Host 返回的未知 section 解码成类型化设置.
- *
- * 非对象返回 `undefined`, 让 scope 保留上一次已接受值; 对象内部字段异常时
- * 逐项回落到默认值, 避免一次坏写入让整块配置失效.
- * @param section - settings namespace 的原始 section.
- * @returns 解码后的设置, 或 `undefined`.
- */
-export function decodeNodeAccentSettings(section: unknown): NodeAccentSettings | undefined {
-  if (typeof section !== 'object' || section === null) return undefined
-  const raw = section as Record<string, unknown>
-  const toolColors: Record<string, string> = {}
-  const configuredTools = raw[TOOL_COLORS_FIELD]
-  if (typeof configuredTools === 'object' && configuredTools !== null) {
-    for (const [tool, value] of Object.entries(configuredTools)) {
-      if (typeof value === 'string' && isCssColor(value)) toolColors[tool] = value
-    }
-  }
-  return {
-    paintIcon: raw[PAINT_ICON_FIELD] !== false,
-    paintTitle: raw[PAINT_TITLE_FIELD] !== false,
-    colors: resolveColors({ colors: raw[COLORS_FIELD] as AccentColors | undefined }),
-    toolColors,
-  }
 }

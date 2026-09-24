@@ -40,22 +40,42 @@ if (handoff.id !== pluginId) {
 }
 
 const require = createRequire(import.meta.url)
+// 平台模块表里的依赖: 运行时由 loader 的 require 提供. react 用本机安装的同一份顶替,
+// store 与界面控件这里只要形状存在即可 — 本脚本校验的是 loader 注册, 真实挂载在运行中的
+// web 实例里验证.
+const componentStub = () => null
+const platformModules = new Map([
+  ['react', () => require('react')],
+  ['react/jsx-runtime', () => require('react/jsx-runtime')],
+  ['@deepseek-ai/dsh-client-store', () => ({
+    createSnapshotStore: (initial) => {
+      let value = initial
+      return { get: () => value, set: (next) => { value = next }, subscribe: () => () => {} }
+    },
+  })],
+  ['@deepseek-ai/dsh-client-ui-primitives', () => ({
+    SettingsForm: componentStub,
+    Switch: componentStub,
+    Tag: componentStub,
+  })],
+])
 const exports = handoff.factory((spec) => {
-  if (spec === 'react' || spec === 'react/jsx-runtime') return require(spec)
-  throw new Error(`unexpected require: ${spec}`)
+  const load = platformModules.get(spec)
+  if (load === undefined) throw new Error(`unexpected require: ${spec}`)
+  return load()
 })
 
 if (typeof exports.apply !== 'function') {
   throw new Error('factory did not export apply')
 }
-for (const name of ['slots', 'configForms']) {
+for (const name of ['slots', 'locale', 'configForms']) {
   if (!Array.isArray(exports.inject) || !exports.inject.includes(name)) {
     throw new Error(`unexpected inject: ${JSON.stringify(exports.inject)}`)
   }
 }
 
-// 真的跑一遍 apply: 卡片能出现在设置页, 靠的是"注册到 settings.plugin.item 的
-// key"与"Host 注册的 settings namespace"相等, 这里两边都断言.
+// 真的跑一遍 apply: 卡片能出现在插件页, 靠的是"注册到 plugins.bundle.config 的 key"
+// 与"Host 条目 id"相等, 这里两边都断言.
 const bindings = []
 const registrations = []
 const injections = []
@@ -63,23 +83,31 @@ const effects = []
 const ctx = {
   logger: { info() {}, warn() {}, debug() {} },
   configForms: {
-    get(namespace) {
-      bindings.push({ namespace })
+    get(entryId) {
+      bindings.push({ namespace: entryId })
       return {
-        getSnapshot: () => ({ value: undefined }),
+        getSnapshot: () => ({ status: 'ready', value: undefined, base: undefined, user: undefined, revision: 0, writable: true }),
         subscribe: () => () => {},
-        set: async () => true,
+        mutate: async () => true,
       }
     },
+    whileServed(_entryIds, register) {
+      register(new Set([pluginId]))
+      return () => {}
+    },
+  },
+  locale: {
+    register() { return () => {} },
   },
   slots: {
     inject(name, factory) {
       injections.push(name)
       factory()
+      return () => {}
     },
-    register(options, component) {
-      registrations.push({ options, component })
-      return options
+    register(options) {
+      registrations.push({ options })
+      return () => {}
     },
   },
   effect(callback) {
@@ -90,27 +118,22 @@ const ctx = {
 exports.apply(ctx)
 for (const effect of effects) effect()
 
-if (!injections.includes('settings.plugin.item')) {
+if (!injections.includes('plugins.bundle.config')) {
   throw new Error(`apply did not inject the plugin card slot: ${JSON.stringify(injections)}`)
 }
-const card = registrations.find(entry => entry.options.name === 'settings.plugin.item')
+const card = registrations.find(entry => entry.options.name === 'plugins.bundle.config')
 if (card === undefined) {
-  throw new Error('apply did not register a settings.plugin.item card')
-}
-// 官方那几张卡都是默认 priority 0, keyed slot 只按 priority 升序排. 没有显式
-// 优先级就会退回"谁先注册谁在前", 卡片可能顶到配置页最上面.
-if (!(card.options.priority > 0)) {
-  throw new Error(`card priority ${card.options.priority} does not push it below the official cards`)
+  throw new Error('apply did not register a plugins.bundle.config card')
 }
 
-// 卡片能否出现在设置页, 取决于它的 key 与 Host 半区注册的 settings namespace
-// 相等 (官方 tab 只派发两者的交集). 两边都取真实构建产物, 做交叉断言.
+// 卡片能否出现在插件页, 取决于它的 key 与 Host 条目 id 相等. 两边都取真实构建产物,
+// 做交叉断言.
 const host = await import(join(root, 'lib/index.js'))
 if (typeof host.Config !== 'function' && typeof host.Config !== 'object') {
   throw new Error('host half did not export its Config schema')
 }
 if (card.options.key !== pluginId) {
-  throw new Error(`card key ${card.options.key} !== host namespace ${pluginId}`)
+  throw new Error(`card key ${card.options.key} !== host entry id ${pluginId}`)
 }
 const bound = bindings.find(spec => spec.namespace === pluginId)
 if (bound === undefined) {
