@@ -2,6 +2,8 @@
  * 节点着色配置卡片的样式.
  *
  * 尺寸与间距对齐官方 fields.module.css, 颜色只用 --dsw-alias-* 语义 token.
+ * 输入框的聚焦描边自 0.1.7-rc.2 起走 --dsw-alias-state-business-primary, 不再是
+ * --dsw-alias-brand-primary (后者在 rc.2 只用于开关与勾选框的填充色).
  */
 
 /** 样式标签的 data-plugin-css 标记. */
@@ -114,7 +116,7 @@ export const CARD_CSS = `
 .dna-colorText:focus-visible,
 .dna-toolInput:focus-visible {
   outline: none;
-  border-color: var(--dsw-alias-brand-primary);
+  border-color: var(--dsw-alias-state-business-primary);
 }
 .dna-colorText:disabled,
 .dna-toolInput:disabled {
