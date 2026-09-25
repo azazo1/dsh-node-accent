@@ -1,8 +1,8 @@
 import z from "@deepseek-ai/schemastery";
 import { Context, Volatile } from "@deepseek-ai/cordis";
 //#region src/shared.d.ts
-/** 按事件类别着色的可选类别. */
-declare const CATEGORIES: readonly ["search", "agent", "execute", "file", "task", "command", "thinking", "context", "other"];
+/** 按事件类别着色的可选类别, 工具类别在前, 节点类别在后. */
+declare const CATEGORIES: readonly ["search", "agent", "execute", "file", "task", "goal", "ask", "deliver", "skill", "other", "command", "thinking", "context", "system", "compaction", "trigger"];
 /** 一个可着色的事件类别. */
 type AccentCategory = (typeof CATEGORIES)[number];
 /** 每个类别一个 CSS 颜色值. */

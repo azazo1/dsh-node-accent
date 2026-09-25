@@ -20,18 +20,46 @@ export const STYLE_ID = 'dsh-node-accent/rules'
 /** 承载当前行配色的 CSS 变量, 由行根节点声明, 图标和标题消费. */
 export const ACCENT_VAR = '--naccent'
 
-/** 按事件类别着色的可选类别. */
-export const CATEGORIES = [
+/** 按工具名着色的类别, 不含兜底. */
+export const TOOL_FAMILIES = [
   'search',
   'agent',
   'execute',
   'file',
   'task',
+  'goal',
+  'ask',
+  'deliver',
+  'skill',
+] as const
+
+/** 兜底类别: 未列入类别表的工具都用它. */
+export const OTHER_CATEGORY = 'other' as const
+
+/** 按工具名着色的类别, 含兜底. */
+export const TOOL_CATEGORIES = [...TOOL_FAMILIES, OTHER_CATEGORY] as const
+
+/** 按会话节点着色的类别. */
+export const ROW_CATEGORIES = [
   'command',
   'thinking',
   'context',
-  'other',
+  'system',
+  'compaction',
+  'trigger',
 ] as const
+
+/** 按事件类别着色的可选类别, 工具类别在前, 节点类别在后. */
+export const CATEGORIES = [...TOOL_CATEGORIES, ...ROW_CATEGORIES] as const
+
+/** 一个按工具名着色的类别. */
+export type ToolFamily = (typeof TOOL_FAMILIES)[number]
+
+/** 一个按工具名着色的类别, 含兜底. */
+export type ToolCategory = (typeof TOOL_CATEGORIES)[number]
+
+/** 一个按会话节点着色的类别. */
+export type RowCategory = (typeof ROW_CATEGORIES)[number]
 
 /** 一个可着色的事件类别. */
 export type AccentCategory = (typeof CATEGORIES)[number]
@@ -46,10 +74,17 @@ export const DEFAULT_COLORS: AccentColors = {
   execute: '#f59e0b',
   file: '#22c55e',
   task: '#ec4899',
+  goal: '#14b8a6',
+  ask: '#06b6d4',
+  deliver: '#84cc16',
+  skill: '#d946ef',
+  other: '#64748b',
   command: '#f97316',
   thinking: '#c4b5fd',
   context: '#8a9bb5',
-  other: '#64748b',
+  system: '#38bdf8',
+  compaction: '#94a3b8',
+  trigger: '#fb7185',
 }
 
 /** 是否给图标上色的字段名. */

@@ -10,7 +10,8 @@ import type {} from '@deepseek-ai/dsh-client-ui-plugin-manager/client'
 import { SettingsForm, Switch, Tag } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import {
-  CATEGORIES, COLORS_FIELD, PAINT_ICON_FIELD, PAINT_TITLE_FIELD, TOOL_COLORS_FIELD, isCssColor,
+  CATEGORIES, COLORS_FIELD, PAINT_ICON_FIELD, PAINT_TITLE_FIELD, ROW_CATEGORIES, TOOL_CATEGORIES,
+  TOOL_COLORS_FIELD, isCssColor,
   type AccentCategory,
 } from '../shared.ts'
 import { formLabels, type NodeAccentKey } from './locales.ts'
@@ -34,10 +35,17 @@ const CATEGORY_KEYS: Record<AccentCategory, NodeAccentKey> = {
   execute: 'categoryExecute',
   file: 'categoryFile',
   task: 'categoryTask',
+  goal: 'categoryGoal',
+  ask: 'categoryAsk',
+  deliver: 'categoryDeliver',
+  skill: 'categorySkill',
+  other: 'categoryOther',
   command: 'categoryCommand',
   thinking: 'categoryThinking',
   context: 'categoryContext',
-  other: 'categoryOther',
+  system: 'categorySystem',
+  compaction: 'categoryCompaction',
+  trigger: 'categoryTrigger',
 }
 
 /** 类别名到说明文案键的映射. */
@@ -47,10 +55,17 @@ const CATEGORY_HINT_KEYS: Record<AccentCategory, NodeAccentKey> = {
   execute: 'categoryExecuteHint',
   file: 'categoryFileHint',
   task: 'categoryTaskHint',
+  goal: 'categoryGoalHint',
+  ask: 'categoryAskHint',
+  deliver: 'categoryDeliverHint',
+  skill: 'categorySkillHint',
+  other: 'categoryOtherHint',
   command: 'categoryCommandHint',
   thinking: 'categoryThinkingHint',
   context: 'categoryContextHint',
-  other: 'categoryOtherHint',
+  system: 'categorySystemHint',
+  compaction: 'categoryCompactionHint',
+  trigger: 'categoryTriggerHint',
 }
 
 /**
@@ -149,6 +164,24 @@ export function NodeAccentSettingsCard(props: NodeAccentCardProps) {
     )
     : null
 
+  const categoryField = (category: AccentCategory) => (
+    <div className="dna-field" key={category}>
+      <div className="dna-head">
+        <span className="dna-label">{t(CATEGORY_KEYS[category])}</span>
+        {badges(state.colors[category].overridden, () => { props.clearPath([COLORS_FIELD, category]) })}
+        <ColorField
+          label={t(CATEGORY_KEYS[category])}
+          swatchLabel={t('swatchLabel')}
+          colorLabel={t('colorLabel')}
+          value={state.colors[category].value}
+          disabled={disabled}
+          onCommit={(next) => { props.setPath([COLORS_FIELD, category], next) }}
+        />
+      </div>
+      <p className="dna-hint">{t(CATEGORY_HINT_KEYS[category])}</p>
+    </div>
+  )
+
   return (
     <SettingsForm labels={formLabels(t)} state={state} onSave={props.save} onDiscard={props.discard}>
       <div className="dna-field">
@@ -182,25 +215,13 @@ export function NodeAccentSettingsCard(props: NodeAccentCardProps) {
         <p className="dna-hint">{t('paintTargetHint')}</p>
       </div>
 
-      <p className="dna-sectionTitle">{t('categoryTitle')}</p>
-      <p className="dna-sectionHint">{t('categoryHint')}</p>
-      {CATEGORIES.map(category => (
-        <div className="dna-field" key={category}>
-          <div className="dna-head">
-            <span className="dna-label">{t(CATEGORY_KEYS[category])}</span>
-            {badges(state.colors[category].overridden, () => { props.clearPath([COLORS_FIELD, category]) })}
-            <ColorField
-              label={t(CATEGORY_KEYS[category])}
-              swatchLabel={t('swatchLabel')}
-              colorLabel={t('colorLabel')}
-              value={state.colors[category].value}
-              disabled={disabled}
-              onCommit={(next) => { props.setPath([COLORS_FIELD, category], next) }}
-            />
-          </div>
-          <p className="dna-hint">{t(CATEGORY_HINT_KEYS[category])}</p>
-        </div>
-      ))}
+      <p className="dna-sectionTitle">{t('toolCategoryTitle')}</p>
+      <p className="dna-sectionHint">{t('toolCategoryHint')}</p>
+      {TOOL_CATEGORIES.map(categoryField)}
+
+      <p className="dna-sectionTitle">{t('rowCategoryTitle')}</p>
+      <p className="dna-sectionHint">{t('rowCategoryHint')}</p>
+      {ROW_CATEGORIES.map(categoryField)}
 
       <p className="dna-sectionTitle">{t('toolTitle')}</p>
       <p className="dna-sectionHint">{t('toolHint')}</p>

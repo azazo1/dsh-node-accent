@@ -15,15 +15,16 @@ per event category, without rails or background tints.
 
 ## 效果
 
-- 工具行: `bash` / `pwsh` 一类命令执行, `read` / `write` / `edit` 一类文件
-  操作, `web_search` 一类联网搜索, `subagent` 一类智能体, `todo_write` 一类
-  任务, 各用各的颜色.
-- 思考行, 上下文注入行, 命令行节点的图标和标题同样上色.
+- 工具行按类别上色: 联网搜索, 智能体, 命令执行, 文件操作, 任务与作业, 目标与
+  计划, 提问, 交付与展示, 技能, 以及兜底的其他工具.
+- 节点行按类型上色: 斜杠命令节点, 思考行, 上下文注入行, 系统提示卡, 上下文
+  压缩行, 非人工触发的回合通知行.
 - 摘要文字 (标题后面那截), 展开后的正文, 以及工具失败时的红点 / 中断时的黄点
   保持原生颜色不动.
 
-已知边界: `skill` 工具的卡片行没有走官方 `DisclosureRow` 原语, 因此不在着色
-范围内, 保持原生颜色.
+已知边界: `developer-message` 和未知节点在 dsh 里落到通用的 JSON 回退行, 没有
+图标与标题结构, 不在着色范围内. 第三方插件带来的工具不进类别表, 需要单独上色
+时用 "按工具名覆盖".
 
 ## 安装
 
@@ -50,28 +51,36 @@ web 与 desktop 两个 profile 跑的是同一套 Web 应用, 桌面端只是多
 |---|---|
 | `paintIcon` | 是否给行首图标上色, 默认开 |
 | `paintTitle` | 是否给标题文字上色, 默认开 |
-| `colors` | 每个事件类别一个颜色 |
-| `toolColors` | 按 wire 工具名逐个覆盖, 优先级高于类别色 |
+| `colors` | 每个类别一个颜色, 工具类别与节点类别各一段 |
+| `toolColors` | 按 wire 工具名逐个覆盖, 优先级高于类别色; 任何工具名都有效, 插件带来的工具也算 |
 
-类别与默认色:
+类别与默认色 (前 10 个按工具名匹配, 后 6 个按会话节点匹配):
 
-| 类别 | 覆盖的行 | 默认色 |
+| 类别 | 覆盖的工具或行 | 默认色 |
 |---|---|---|
 | `search` | `web_search`, `web_fetch` | `#3b82f6` |
-| `agent` | `subagent`, `workflow`, `send_message` 等 | `#a855f7` |
+| `agent` | `subagent`, `subagent_fork`, `send_message`, `list_agents` 等 | `#a855f7` |
 | `execute` | `bash`, `pwsh`, `run_code`, `terminal_*` 等 | `#f59e0b` |
 | `file` | `read`, `write`, `edit`, `grep`, `glob` 等 | `#22c55e` |
-| `task` | `todo_write`, `create_goal`, `job_*` 等 | `#ec4899` |
+| `task` | `todo_write`, `job_*`, `schedule_*` 等 | `#ec4899` |
+| `goal` | `create_goal`, `get_goal`, `update_goal`, `exit_plan_mode` | `#14b8a6` |
+| `ask` | `ask_user_question` | `#06b6d4` |
+| `deliver` | `present` | `#84cc16` |
+| `skill` | `skill` | `#d946ef` |
+| `other` | 未在上面列出的工具 | `#64748b` |
 | `command` | 斜杠命令节点 | `#f97316` |
 | `thinking` | 思考行 | `#c4b5fd` |
 | `context` | 上下文注入行 | `#8a9bb5` |
-| `other` | 未列出的工具 | `#64748b` |
+| `system` | 系统提示卡 | `#38bdf8` |
+| `compaction` | 模型历史压缩标记行, 含 `/compact` | `#94a3b8` |
+| `trigger` | 由定时 / 子智能体 / 插件等非人工来源开启的回合通知行 | `#fb7185` |
 
 颜色值只接受 `#rgb` / `#rrggbb` / `#rrggbbaa` 和 `rgb()` / `hsl()` /
 `oklch()` 一类颜色函数; 非法值回落到该类别的默认色, 不会把一条坏规则拼进样式表.
 
-只写了 `colors` 的话, 想改某个具体工具 (例如让 `write` 和 `read` 分开), 在
-"按工具名覆盖"里加一条 `write` → 颜色即可.
+只写了 `colors` 的话, 想改某个具体工具 (例如让 `write` 和 `read` 分开, 或者给
+插件带来的 `chrome_open` 一个颜色), 在 "按工具名覆盖" 里加一条工具名到颜色的
+映射即可, 优先级高于类别色.
 
 ## 与 dsh-node-appearance 互斥
 
@@ -88,11 +97,18 @@ dsh plugin --profile web remove @max-null/dsh-node-appearance
 `<style data-plugin-css="dsh-node-accent/rules">`, 内容由当前 settings 快照生成.
 选择器全部走官方硬编码的 `data-` 属性:
 
-- `[data-chat-flow-kind="tool-call"] [data-tool]` : ToolRow 根节点
-- `[data-variant="think"]` : ReasoningRow 根节点
-- `[data-chat-flow-kind="command"]` / `[data-chat-flow-kind="context"]` : 节点外层
+- `[data-chat-flow-kind="tool-call"] [data-tool]` : ToolRow / PresentRow 根节点,
+  另外每个已知工具名一条精确规则声明颜色, 这样插件工具也能被按工具名覆盖.
+- `[data-variant="think"]` : ReasoningRow 根节点.
+- `[data-chat-flow-kind="command"]` / `"context"` / `"system-prompt"` /
+  `"compaction"` / `"manual-compaction"` / `"turn-trigger"` : 节点外层.
 - `[data-disclosure-row] > :first-child` / `> span:nth-child(2)` : 图标和标题
-  在行内的固定位置
+  在 DisclosureRow 里的固定位置.
+- `[data-compaction-icon] svg` / `[data-turn-trigger] > button > span:nth-child(1|2)` :
+  压缩行和触发通知行是自绘结构, 走它们自己的标记与位置.
+- `[data-tool="skill"] > div > span:nth-child(1) svg:first-child` 与
+  `> div > span:nth-child(2|3)` : skill 行不走 DisclosureRow, 图标是行首 span 里
+  第一个 svg (排除折叠箭头), 标题位置随无障碍状态文本在 2 或 3.
 
 图标用 `svg:not([data-state])` 圈定, 这样工具行在 error / stopped 状态下换上的
 StateDot 不会被染色.

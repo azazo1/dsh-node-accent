@@ -1,9 +1,21 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
-  CATEGORIES, DEFAULT_COLORS, DEFAULT_SETTINGS, isCssColor,
-  resolveColors,
+  CATEGORIES, DEFAULT_COLORS, DEFAULT_SETTINGS, ROW_CATEGORIES, TOOL_CATEGORIES,
+  isCssColor, resolveColors,
 } from '../src/shared.ts'
+
+describe('category contract', () => {
+  it('partitions the categories into tool and node groups without repeats', () => {
+    assert.deepEqual([...TOOL_CATEGORIES, ...ROW_CATEGORIES], [...CATEGORIES])
+    assert.equal(new Set(CATEGORIES).size, CATEGORIES.length)
+  })
+
+  it('gives every category its own default color', () => {
+    assert.deepEqual(Object.keys(DEFAULT_COLORS).sort(), [...CATEGORIES].sort())
+    assert.equal(new Set(Object.values(DEFAULT_COLORS)).size, CATEGORIES.length)
+  })
+})
 
 describe('isCssColor', () => {
   it('accepts hex and color functions', () => {
