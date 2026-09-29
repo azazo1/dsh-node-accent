@@ -102,18 +102,17 @@ dsh plugin --profile web remove @max-null/dsh-node-appearance
 - `[data-variant="think"]` : ReasoningRow 根节点.
 - `[data-chat-flow-kind="command"]` / `"context"` / `"system-prompt"` /
   `"compaction"` / `"manual-compaction"` / `"turn-trigger"` : 节点外层.
-- `[data-disclosure-row] > :first-child` / `> span:nth-child(2)` : 图标和标题
-  外层在 DisclosureRow 里的固定位置.
+- `[data-disclosure-row] > :first-child` : DisclosureRow 的图标外层.
 - `[data-disclosure-row] > span:nth-child(2) > span:nth-child(1) > span:nth-child(1)` :
-  标题文字本身. 0.2.0-rc.1 起标题外面包了 TextShimmer 的 `.root` / `.content`
-  两层, 文字那一层自带 `color`, 只染外层的话文字保持原生颜色, 所以这一层也要写,
-  并按选择器权重压过官方 `.title`.
+  TextShimmer 内容层的标题节点. 只染这一层, 不染包含标题和摘要的共同外层;
+  `0.2.0-rc.2` 起摘要继承行颜色, 给共同外层着色会连带改变摘要颜色.
 - `[data-compaction-icon] svg` / `[data-turn-trigger] > button > span:nth-child(1|2)` :
   压缩行和触发通知行是自绘结构, 走它们自己的标记与位置.
 - `[data-tool="skill"] > div > span:nth-child(1) svg:first-child` 与
-  `> div > span:nth-child(2|3)` : skill 行不走 DisclosureRow, 图标是行首 span 里
-  第一个 svg (排除折叠箭头), 标题位置随无障碍状态文本在 2 或 3. 标题文字同样在
-  外层的下一层 (`> span:nth-child(1) > span:nth-child(1)`), 一并写下.
+  `> div > span:nth-child(2|3) > span:nth-child(1) > span:nth-child(1)` : skill 行
+  不走 DisclosureRow, 图标是行首 span 里第一个 svg (排除折叠箭头). 标题在
+  TextShimmer 内容层的首项, 外层位置随无障碍状态文本在 2 或 3; preparing 阶段
+  的纯文字标题沿用同一层级. 摘要和 shimmer 装饰副本保持原生颜色.
 
 图标用 `svg:not([data-state])` 圈定, 这样工具行在 error / stopped 状态下换上的
 StateDot 不会被染色.

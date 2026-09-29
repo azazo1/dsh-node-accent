@@ -79,7 +79,7 @@ describe('buildCss', () => {
   })
 
   it('paints the title text node inside the TextShimmer wrapper', () => {
-    // 0.2.0-rc.1 把标题包进两层 TextShimmer, 文字那一层自带 `color`, 只染外层无法着色.
+    // 标题是 TextShimmer 内容层的首项, 摘要是兄弟项, 不能给共同外层着色.
     const css = buildCss(DEFAULT_SETTINGS)
     const deep = 'span:nth-child(2) > span:nth-child(1) > span:nth-child(1)'
     assert.ok(css.includes(`[data-disclosure-row] > ${deep}`))
@@ -89,11 +89,17 @@ describe('buildCss', () => {
     assert.ok(css.includes(`[data-tool="skill"] > div > span:nth-child(3) > span:nth-child(1) > span:nth-child(1)`))
   })
 
-  it('paints the skill row through its own structure', () => {
+  it('leaves the shared title-summary wrappers unpainted', () => {
     const css = buildCss(DEFAULT_SETTINGS)
+    const paint = css.match(/([^{}]+)\{\s*color: var\(--naccent\);/)
+    assert.ok(paint)
+    const paintSelectors = paint[1].trim().split(',\n')
+    assert.ok(paintSelectors.length > 0)
+    assert.ok(!paintSelectors.some(selector => selector.endsWith('[data-disclosure-row] > span:nth-child(2)')))
+    for (const position of [2, 3]) {
+      assert.ok(!paintSelectors.includes(`[data-chat-flow-kind="tool-call"] [data-tool="skill"] > div > span:nth-child(${position})`))
+    }
     assert.ok(css.includes('[data-tool="skill"] > div > span:nth-child(1) svg:first-child'))
-    assert.ok(css.includes('[data-tool="skill"] > div > span:nth-child(2)'))
-    assert.ok(css.includes('[data-tool="skill"] > div > span:nth-child(3)'))
   })
 
   it('leaves the state dot out of the icon rule', () => {
