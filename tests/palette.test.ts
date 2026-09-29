@@ -78,6 +78,17 @@ describe('buildCss', () => {
     assert.ok(css.includes('[data-turn-trigger] > button > span:nth-child(1) svg'))
   })
 
+  it('paints the title text node inside the TextShimmer wrapper', () => {
+    // 0.2.0-rc.1 把标题包进两层 TextShimmer, 文字那一层自带 `color`, 只染外层无法着色.
+    const css = buildCss(DEFAULT_SETTINGS)
+    const deep = 'span:nth-child(2) > span:nth-child(1) > span:nth-child(1)'
+    assert.ok(css.includes(`[data-disclosure-row] > ${deep}`))
+    assert.ok(css.includes(`[data-chat-flow-kind="tool-call"] [data-tool] [data-disclosure-row] > ${deep}`))
+    assert.ok(css.includes(`[data-variant="think"] [data-disclosure-row] > ${deep}`))
+    assert.ok(css.includes(`[data-tool="skill"] > div > span:nth-child(2) > span:nth-child(1) > span:nth-child(1)`))
+    assert.ok(css.includes(`[data-tool="skill"] > div > span:nth-child(3) > span:nth-child(1) > span:nth-child(1)`))
+  })
+
   it('paints the skill row through its own structure', () => {
     const css = buildCss(DEFAULT_SETTINGS)
     assert.ok(css.includes('[data-tool="skill"] > div > span:nth-child(1) svg:first-child'))

@@ -103,12 +103,17 @@ dsh plugin --profile web remove @max-null/dsh-node-appearance
 - `[data-chat-flow-kind="command"]` / `"context"` / `"system-prompt"` /
   `"compaction"` / `"manual-compaction"` / `"turn-trigger"` : 节点外层.
 - `[data-disclosure-row] > :first-child` / `> span:nth-child(2)` : 图标和标题
-  在 DisclosureRow 里的固定位置.
+  外层在 DisclosureRow 里的固定位置.
+- `[data-disclosure-row] > span:nth-child(2) > span:nth-child(1) > span:nth-child(1)` :
+  标题文字本身. 0.2.0-rc.1 起标题外面包了 TextShimmer 的 `.root` / `.content`
+  两层, 文字那一层自带 `color`, 只染外层的话文字保持原生颜色, 所以这一层也要写,
+  并按选择器权重压过官方 `.title`.
 - `[data-compaction-icon] svg` / `[data-turn-trigger] > button > span:nth-child(1|2)` :
   压缩行和触发通知行是自绘结构, 走它们自己的标记与位置.
 - `[data-tool="skill"] > div > span:nth-child(1) svg:first-child` 与
   `> div > span:nth-child(2|3)` : skill 行不走 DisclosureRow, 图标是行首 span 里
-  第一个 svg (排除折叠箭头), 标题位置随无障碍状态文本在 2 或 3.
+  第一个 svg (排除折叠箭头), 标题位置随无障碍状态文本在 2 或 3. 标题文字同样在
+  外层的下一层 (`> span:nth-child(1) > span:nth-child(1)`), 一并写下.
 
 图标用 `svg:not([data-state])` 圈定, 这样工具行在 error / stopped 状态下换上的
 StateDot 不会被染色.

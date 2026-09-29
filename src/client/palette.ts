@@ -88,8 +88,25 @@ const TRIGGER_ROW = '[data-chat-flow-kind="turn-trigger"]'
 /** DisclosureRow 行内的图标位: 工具行换上的 StateDot 带 data-state, 必须排除. */
 const DISCLOSURE_ICON = '[data-disclosure-row] > :first-child svg:not([data-state])'
 
-/** DisclosureRow 行内的标题: 恒为第 2 个子元素 (TextShimmer 渲染成 span). */
-const DISCLOSURE_TITLE = '[data-disclosure-row] > span:nth-child(2)'
+/**
+ * DisclosureRow 标题的外层: 恒为第 2 个子元素 (TextShimmer 渲染成 span).
+ *
+ * 这一层自身不带颜色, 其内部还有一层 `.content`, 所以它只负责把颜色通过继承
+ * 传下去, 真正带文字的节点靠 `DISCLOSURE_TITLE_TEXT` 圈定.
+ */
+const DISCLOSURE_TITLE_WRAPPER = '[data-disclosure-row] > span:nth-child(2)'
+
+/**
+ * DisclosureRow 标题的文字节点: 外层 TextShimmer 的 `.content` 里第 1 个子元素.
+ *
+ * 0.2.0-rc.1 起标题被包进两层 TextShimmer 结构, 文字所在的那一层带了自己的
+ * `color` (DisclosureRow 的 `.title`), 只染外层的话文字仍然保持原生颜色, 因此
+ * 必须直接命中这一层并按选择器权重压过 `.title`.
+ */
+const DISCLOSURE_TITLE_TEXT = '[data-disclosure-row] > span:nth-child(2) > span:nth-child(1) > span:nth-child(1)'
+
+/** DisclosureRow 标题的两个着色目标: 外层 (继承兜底) 与文字节点. */
+const DISCLOSURE_TITLES: readonly string[] = [DISCLOSURE_TITLE_WRAPPER, DISCLOSURE_TITLE_TEXT]
 
 /** CompactionItem 的图标 (只有内容图标带 data-compaction-icon, 折叠箭头不带). */
 const COMPACTION_ICON = '[data-compaction-icon] svg'
@@ -110,10 +127,21 @@ const TRIGGER_TITLE = '[data-turn-trigger] > button > span:nth-child(2)'
 const SKILL_ICON = '> div > span:nth-child(1) svg:first-child'
 
 /**
- * SkillRow 的标题: 状态文本 (visuallyHidden) 存在时标题在第 3 位, 不存在时在第 2 位.
+ * SkillRow 的标题外层: 状态文本 (visuallyHidden) 存在时标题在第 3 位, 不存在时在第 2 位.
  * 两个位置都写, 另一个位置命中的只会是不可见文本或 2px 分隔点, 改 color 没有副作用.
  */
-const SKILL_TITLES: readonly string[] = ['> div > span:nth-child(2)', '> div > span:nth-child(3)']
+const SKILL_TITLE_WRAPPERS: readonly string[] = ['> div > span:nth-child(2)', '> div > span:nth-child(3)']
+
+/**
+ * SkillRow 标题的文字节点: 外层 TextShimmer 的 `.content` 里第 1 个子元素.
+ * 与 DisclosureRow 同理, 0.2.0-rc.1 起文字外层多了一层自带 `.title` 颜色的 span.
+ */
+const SKILL_TITLE_TEXTS: readonly string[] = SKILL_TITLE_WRAPPERS.map(
+  wrapper => `${wrapper} > span:nth-child(1) > span:nth-child(1)`,
+)
+
+/** SkillRow 标题的两个着色目标: 外层 (preparing 阶段的文字就在这一层) 与文字节点. */
+const SKILL_TITLES: readonly string[] = [...SKILL_TITLE_WRAPPERS, ...SKILL_TITLE_TEXTS]
 
 /** 一个节点类别的着色目标: 行根节点加上行内的图标与标题选择器. */
 interface RowPaint {
@@ -132,16 +160,16 @@ interface RowPaint {
  * CompactionItem, 否则用走 DisclosureRow 的 GenericCommandCard.
  */
 export const ROW_PAINTS: readonly RowPaint[] = [
-  { category: 'command', row: COMMAND_ROW, icons: [DISCLOSURE_ICON], titles: [DISCLOSURE_TITLE] },
-  { category: 'thinking', row: THINK_ROW, icons: [DISCLOSURE_ICON], titles: [DISCLOSURE_TITLE] },
-  { category: 'context', row: CONTEXT_ROW, icons: [DISCLOSURE_ICON], titles: [DISCLOSURE_TITLE] },
-  { category: 'system', row: SYSTEM_PROMPT_ROW, icons: [DISCLOSURE_ICON], titles: [DISCLOSURE_TITLE] },
+  { category: 'command', row: COMMAND_ROW, icons: [DISCLOSURE_ICON], titles: DISCLOSURE_TITLES },
+  { category: 'thinking', row: THINK_ROW, icons: [DISCLOSURE_ICON], titles: DISCLOSURE_TITLES },
+  { category: 'context', row: CONTEXT_ROW, icons: [DISCLOSURE_ICON], titles: DISCLOSURE_TITLES },
+  { category: 'system', row: SYSTEM_PROMPT_ROW, icons: [DISCLOSURE_ICON], titles: DISCLOSURE_TITLES },
   { category: 'compaction', row: COMPACTION_ROW, icons: [COMPACTION_ICON], titles: [COMPACTION_TITLE] },
   {
     category: 'compaction',
     row: MANUAL_COMPACTION_ROW,
     icons: [COMPACTION_ICON, DISCLOSURE_ICON],
-    titles: [COMPACTION_TITLE, DISCLOSURE_TITLE],
+    titles: [COMPACTION_TITLE, ...DISCLOSURE_TITLES],
   },
   { category: 'trigger', row: TRIGGER_ROW, icons: [TRIGGER_ICON], titles: [TRIGGER_TITLE] },
 ]
@@ -223,7 +251,7 @@ function paintRule(paintIcon: boolean, paintTitle: boolean): string {
     for (const [tool, shape] of Object.entries(SPECIAL_TOOL_ROWS)) push(toolRowSelector(tool), shape.icons)
   }
   if (paintTitle) {
-    push(TOOL_ROW, [DISCLOSURE_TITLE])
+    push(TOOL_ROW, DISCLOSURE_TITLES)
     for (const [tool, shape] of Object.entries(SPECIAL_TOOL_ROWS)) push(toolRowSelector(tool), shape.titles)
   }
   for (const paint of ROW_PAINTS) {
